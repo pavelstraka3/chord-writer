@@ -6,11 +6,31 @@ import { Word } from "@/app/lib/classes/Word";
 import { Song } from "@/app/lib/classes/Song";
 import SectionComponent from "@/app/components/Section";
 import { Button } from "@/app/components/ui/button";
-import SongTitle from "@/app/components/SongTitle";
 import EditableText from "@/app/components/EditableText";
+import { createSong, updateSong } from "@/app/lib/serverActions";
 
-const SongEditor = () => {
-  const [song, setSong] = useState<Song>(new Song("Let It Be", "The Beatles"));
+type Props = {
+  songData: Song;
+};
+
+const createSongFromData = (songData: Song): Song => {
+  const song = new Song(songData.title, songData.artist);
+  songData.sections.forEach(section => {
+    const newSection = new Section(section.sectionName);
+    section.lines.forEach(line => {
+      const newLine = new Line();
+      line.words.forEach(word => {
+        newLine.addWord(new Word(word.text, word.chord));
+      });
+      newSection.addLine(newLine);
+    });
+    song.addSection(newSection);
+  });
+  return song;
+};
+
+const SongEditor = ({ songData }: Props) => {
+  const [song, setSong] = useState<Song>(() => createSongFromData(songData));
 
   const addSection = (sectionName: string) => {
     const newSection = new Section(sectionName);
@@ -46,66 +66,59 @@ const SongEditor = () => {
   };
 
   useEffect(() => {
-    addSection("Verse 1");
-    addLineToSection(0, [
-      { text: "When", chord: "C" },
-      { text: "I" },
-      { text: "find", chord: "G" },
-      { text: "myself", chord: "Am" },
-    ]);
+    setSong(createSongFromData(songData));
+  }, [songData]);
 
-    addLineToSection(0, [
-      { text: "in", chord: "F" },
-      { text: "times", chord: "C" },
-      { text: "of", chord: "G" },
-      { text: "trouble", chord: "Am" },
-    ]);
-
-    addSection("Chorus");
-
-    addLineToSection(1, [
-      { text: "Let", chord: "F" },
-      { text: "it", chord: "C" },
-      { text: "be", chord: "G" },
-      { text: "let", chord: "Am" },
-      { text: "it", chord: "F" },
-      { text: "be", chord: "C" },
-    ]);
-  }, []);
-
-  const handleTitleEdit = (newTitle: string) => {
+  const handleTitleArtistEdit = (newText: string, isTitle: boolean) => {
     setSong(prevSong => {
-      const updatedSong = new Song(newTitle, prevSong.artist);
+      const updatedSong = new Song(
+        isTitle ? newText : prevSong.title,
+        isTitle ? prevSong.artist : newText,
+      );
       updatedSong.sections = prevSong.sections;
       return updatedSong;
     });
   };
 
-  const handleTitleArtistEdit = (newText: string, isTitle: boolean) => {
-    setSong(prevSong => {
-      const updatedSong = new Song(isTitle ? newText : prevSong.title, isTitle ? prevSong.artist : newText);
-      updatedSong.sections = prevSong.sections;
-      return updatedSong;
-    });
+  const handleSave = () => {
+    if (songData?.id) {
+      updateSong(songData.id, song);
+    } else {
+      createSong(song);
+    }
   };
 
   return (
     <div className="max-w-[1200px]">
       <div className="flex flex-row">
         <div>
-          <EditableText text={song.title} onTextEdit={(newTitle) => handleTitleArtistEdit(newTitle, true)}/>
-          <EditableText text={song.artist} onTextEdit={(newArtist) => handleTitleArtistEdit(newArtist, false)}/>
+          <EditableText
+            text={song.title}
+            onTextEdit={newTitle => handleTitleArtistEdit(newTitle, true)}
+          />
+          <EditableText
+            text={song.artist}
+            onTextEdit={newArtist => handleTitleArtistEdit(newArtist, false)}
+          />
         </div>
         <div className="flex flex-row gap-2">
-          <Button>Uložit</Button>
-          <Button variant="outline">Export</Button>
+          <Button type="button" onClick={handleSave}>
+            Uložit
+          </Button>
+          <Button type="button" variant="outline">
+            Export
+          </Button>
         </div>
       </div>
       {song.sections.map((section, sectionIndex) => (
         <SectionComponent section={section} key={sectionIndex} />
       ))}
       <div className="flex">
-        <Button className="flex" onClick={() => addSection("Verse")}>
+        <Button
+          type="button"
+          className="flex"
+          onClick={() => addSection("Verse")}
+        >
           Přidat sekci
         </Button>
       </div>

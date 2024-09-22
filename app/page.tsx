@@ -9,9 +9,9 @@ const CHORD_DATA: ChordData = {
 
 export default function Home() {
   return (
-    <div className="flex justify-center p-8">
-      <SongEditor />
-      <GuitarChord chordData={CHORD_DATA} />
+    <div>
+      {/*<SongEditor />*/}
+      {/*<GuitarChord chordData={CHORD_DATA} />*/}
     </div>
   );
 }

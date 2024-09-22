@@ -4,7 +4,7 @@ import { Input } from "@/app/components/ui/input";
 
 type Props = {
     text: string;
-    onTextEdit: (title: string) => void;
+    onTextEdit: (text: string) => void;
 };
 
 const EditableText = ({ text, onTextEdit }: Props) => {
