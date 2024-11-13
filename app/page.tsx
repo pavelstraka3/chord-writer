@@ -1,17 +1,15 @@
-import SongEditor from "@/app/components/SongEditor";
-import GuitarChord, { ChordData } from "@/app/components/GuitarChord";
+import React from "react";
+import SongList from "@/app/songs/components/SongList";
 
-const CHORD_DATA: ChordData = {
-  frets: [-1, 3, 2, 0, 1, 0],
-  fingers: [0, 3, 2, 0, 1, 0],
-  baseFret: 1,
-};
+async function Page() {
+  try {
+    const response = await fetch(`${process.env.SERVER_URL}/songs`);
+    const data = await response.json();
 
-export default function Home() {
-  return (
-    <div>
-      {/*<SongEditor />*/}
-      {/*<GuitarChord chordData={CHORD_DATA} />*/}
-    </div>
-  );
+    return <SongList songs={data} />;
+  } catch (e) {
+    return <div>Something happened.</div>;
+  }
 }
+
+export default Page;
